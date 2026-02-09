@@ -31,19 +31,24 @@ app.get("/api/faq", (req, res) => {
 
 // POST
 app.post("/api/faq", (req, res) => {
-    const { question, answer, category } = req.body;
-    const now = new Date().toISOString();
+    const { question, answer } = req.body;
+
+    if (!question || !answer) {
+        return res.status(400).json({ error: "Question and answer required" });
+    }
 
     db.run(
-        `INSERT INTO faq (question, answer, category, created_at)
-     VALUES (?, ?, ?, ?)`,
-        [question, answer, category, now],
+        "INSERT INTO faq (question, answer) VALUES (?, ?)",
+        [question, answer],
         function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ id: this.lastID });
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ id: this.lastID, question, answer });
         }
     );
 });
+
 
 // PUT
 app.put("/api/faq/:id", (req, res) => {
